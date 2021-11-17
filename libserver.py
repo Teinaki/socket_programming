@@ -5,10 +5,7 @@ import io
 import struct
 
 request_login = {
-    "morpheus": "Follow the white rabbit. \U0001f430",
-    "ring": "In the caves beneath the Misty Mountains. \U0001f48d",
     "user": "Trying to login: User. \U0001f430",
-    "\U0001f436": "\U0001f43e Playing ball! \U0001f3d0",
 }
 
 
@@ -62,7 +59,7 @@ class Message:
                 self._send_buffer = self._send_buffer[sent:]
                 # Close when the buffer is drained. The response has been sent.
                 if sent and not self._send_buffer:
-                    self.close()
+                    print('close')
 
     def _json_encode(self, obj, encoding):
         return json.dumps(obj, ensure_ascii=False).encode(encoding)
@@ -97,6 +94,9 @@ class Message:
             print(name)
             answer = request_login.get(name) or f'No match for "{query}".'
             content = {"result": answer}
+        elif action == "send":
+            print("send")
+            content = {"result": "answer"}
         else:
             content = {"result": f'Error: invalid action "{action}".'}
         content_encoding = "utf-8"

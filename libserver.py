@@ -4,9 +4,10 @@ import json
 import io
 import struct
 
-request_search = {
+request_login = {
     "morpheus": "Follow the white rabbit. \U0001f430",
     "ring": "In the caves beneath the Misty Mountains. \U0001f48d",
+    "user": "Trying to login: User. \U0001f430",
     "\U0001f436": "\U0001f43e Playing ball! \U0001f3d0",
 }
 
@@ -78,9 +79,9 @@ class Message:
         self, *, content_bytes, content_type, content_encoding
     ):
         jsonheader = {
-            "content-type": content_type,
-            "content-encoding": content_encoding,
-            "content-length": len(content_bytes),
+            "Content-type": content_type,
+            "Content-encoding": content_encoding,
+            "Content-length": len(content_bytes),
         }
         jsonheader_bytes = self._json_encode(jsonheader, "utf-8")
         message_hdr = struct.pack(">H", len(jsonheader_bytes))
@@ -90,11 +91,12 @@ class Message:
     def _create_response_json_content(self):
         action = self.request.get("action")
         print(action)
-        if action == "search":
-            query = self.request.get("value")
-            answer = request_search.get(query) or f'No match for "{query}".'
+        if action == "login":
+            query = self.request.get("params")
+            name = query["name"]
+            print(name)
+            answer = request_login.get(name) or f'No match for "{query}".'
             content = {"result": answer}
-            #if action == "login"
         else:
             content = {"result": f'Error: invalid action "{action}".'}
         content_encoding = "utf-8"

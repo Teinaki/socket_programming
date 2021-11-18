@@ -32,7 +32,10 @@ try:
         events = sel.select(timeout=None)
         for key, mask in events:
             if key.data is None:
-                print("HELLO")
+                print("BELOW IS KEY")
+                print(key)
+                print("BELOW IS KEY FILEOBJ")
+                print(key.fileobj)
                 accept_wrapper(key.fileobj)
             else:
                 message = key.data

@@ -25,6 +25,10 @@ def handle_client(conn, addr):
         if not msg:
             print('Bye')
             break
+
+        if message.needed_response == True:
+            message.write()
+            conn.send(message.send_response)
     
     conn.close()
 
@@ -47,7 +51,7 @@ def Main():
         thread.start()
         print(f"[ACTIVE CONNECTIONS] {threading.activeCount() - 1}")
 
-    s.close()
+    server.close()
 
 
 if __name__ == '__main__':

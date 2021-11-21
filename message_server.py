@@ -1,7 +1,11 @@
-import socket
 import struct
 import json
 import io
+
+
+request_login = {
+    "user": "Trying to login: User. \U0001f430",
+}
 
 class MessageServer:
     def __init__(self, data):
@@ -9,6 +13,9 @@ class MessageServer:
         self._header_len = None
         self.header = None
         self.request = None
+        self.needed_response = False
+        self.created_response = False
+        self.send_response = b''
 
 
     def read(self):
@@ -49,11 +56,53 @@ class MessageServer:
         self.data = self.data[content_len:] #slice so its empty
         encoding = self.header["Content-encoding"] 
         self.request = self._decode(data, encoding)
-        print(f"THIS IS DATA: {self.data}")
         print("received request", repr(self.request))
+               
+        self.needed_response = True
 
     def _decode(self, data, encoding):
-        tiow = io.TextIOWrapper(io.BytesIO(data), encoding=encoding)
-        decoded = json.load(tiow)
-        tiow.close()
+        temp = io.TextIOWrapper(io.BytesIO(data), encoding=encoding)
+        decoded = json.load(temp)
         return decoded
+
+    def write(self):
+        if self.request:
+            if not self.created_response:
+                self._respond() #we create a response if none is created yet
+
+    def _respond(self):
+        if self.header["Content-type"] == "application/json":
+            action = self.request.get("action") #action that the user input. login, send, get, logout.
+            print(action)
+            if action == "login":
+                query = self.request.get("params") #this is filler data, needs true database for users.
+                name = query["name"]
+                print(name)
+                answer = request_login.get(name)
+                content = {"result": answer}
+            elif action == "send":
+                print("send") #Send in the future is a message from 1 user to another
+                content = {"result": "answer"}
+            else:
+                content = {"ERROR": "Invalid Action!"} #if action is invalid I'll add it to content and send it back
+            content_encoding = "utf-8"
+            response = {
+                "content_bytes": json.dumps(content, ensure_ascii=False).encode(content_encoding),
+                "content_type": "application/json",
+                "content_encoding": content_encoding,
+            }
+            message = self._message(**response)
+            self.needed_response = False
+            self.created_response = True
+            self.send_response += message #after we have our message all set we can save it and use it in the Server.py
+
+    def _message(self, *, content_bytes, content_type, content_encoding):
+        header = {
+            "Content-type": content_type,
+            "Content-encoding": content_encoding,
+            "Content-length": len(content_bytes),
+        }
+        header_bytes = json.dumps(header, ensure_ascii=False).encode(content_encoding)
+        message_head = struct.pack(">H", len(header_bytes))
+        message = message_head + header_bytes + content_bytes
+        return message

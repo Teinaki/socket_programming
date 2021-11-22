@@ -3,6 +3,7 @@ import json
 import io
 from sqlalchemy.orm import Session
 from sqlalchemy import select
+from datetime import datetime
 
 import data_base
 
@@ -16,6 +17,7 @@ class MessageServer:
         self.created_response = False
         self.send_response = b''
         self.session = Session(data_base.engine)
+        self.user = None
 
 
     def read(self):
@@ -81,8 +83,11 @@ class MessageServer:
                 print(name)
                 content = {"reply": f"{name} has logged in"}
             elif action == "send_messages":
-                print("send") #Send in the future is a message from 1 user to another
-                content = {"result": "answer"}
+                query = self.request.get("params")
+                message = query["messages"]
+                for msg in message:
+                    self.action_send_messages(msg["msg"], msg["to"])
+                content = {"reply": f"Messages have been sent"}
             else:
                 content = {"ERROR": "Invalid Action!"} #if action is invalid I'll add it to content and send it back
             content_encoding = "utf-8"
@@ -117,5 +122,9 @@ class MessageServer:
         self.session.add(login)
         self.session.commit()
 
-    def action_send_messages(self, username):
-        pass
+        self.user = username #set our user for this thread instance of the MessageServer as the logged in user
+
+    def action_send_messages(self, msg, msg_to):
+        new_message = data_base.Message(msg=msg, msg_to=msg_to, msg_from = self.user, sent = datetime.now())
+        self.session.add(new_message)
+        self.session.commit()

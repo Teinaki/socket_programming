@@ -35,7 +35,7 @@ def get_action():
     """ Prompts the user for a command with possible
     arguments and returns them as a list of str.
     """
-    return input('action > ').split() #splits the string at the spaces
+    return input('action > ').split()
 
 
 def end_session(client):
@@ -52,7 +52,7 @@ def get_msg_list():
     another = True
     msg_list = []
     while another:
-        msg_to = input('To: ').strip() #delets begining and end spaces
+        msg_to = input('To: ').strip()
         txt = input('Message: ').strip()
         msg_list.append({'to': msg_to, 'msg': txt})
         again = input('Send another(y/N): ').strip()
@@ -72,11 +72,15 @@ def main():
             client.login(action[1])
         elif action[0] == 'logout':
             client.logout()
+            end_session(client)
         elif action[0] == 'send':
             mesgs = get_msg_list()
             client.send(mesgs)
         elif action[0] == 'get':
             client.get()
+        else:
+            print("Invalid Action: Stopping Client")
+            end_session(client)
 
 
 if __name__ == '__main__':

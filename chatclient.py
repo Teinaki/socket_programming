@@ -34,13 +34,11 @@ class Client:
         if self.server and not self.logged_in:
             self.server.connect()
             self.name = name
-            print(name)
             message = {
                 'action': 'login',
                 'params': {'name': name}
                 }
             login_req = json.dumps(message)
-            print(login_req)
             resp = self.server.send(login_req)
             pp.pprint(resp)
             self.logged_in = True

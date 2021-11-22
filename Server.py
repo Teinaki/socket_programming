@@ -1,7 +1,5 @@
 import socket
-import struct
-import json
-import io
+import sys
 
 # import thread module
 from _thread import *
@@ -9,7 +7,6 @@ import threading
 
 from message_server import MessageServer
 
-print_lock = threading.Lock()
 
 # thread function
 
@@ -19,21 +16,19 @@ def handle_client(conn, addr):
     connected  = True
     while connected:
         msg = conn.recv(1024)
-        print(msg)
-        message = MessageServer(msg)
+        message = MessageServer(msg, addr[1]) #pass the message and port its coming from
         message.read()
         if not msg:
-            print('Bye')
+            print(f"[CLOSING CONNECTION] {addr} disconnected!")
             break
 
-        if message.needed_response == True:
-            message.write()
-            conn.send(message.send_response)
+        message.write()
+        conn.send(message.send_response)
     
     conn.close()
 
 
-def Main():
+def main():
     host = "127.0.0.1"
     port = 65432
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -55,6 +50,9 @@ def Main():
 
 
 if __name__ == '__main__':
-    Main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.exit()
 
 # code referenced from https://www.geeksforgeeks.org/socket-programming-multi-threading-python/

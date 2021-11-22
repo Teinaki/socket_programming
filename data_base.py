@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
-engine = create_engine('sqlite:///socket_programming.db', future=True)
+engine = create_engine('sqlite:///assn2-chat-server-Teinaki.db', future=True, connect_args={'check_same_thread': False})
 Base = declarative_base()
 
 class User(Base):
@@ -24,6 +24,7 @@ class Message(Base):
 class Login(Base):
     __tablename__ = 'login'
     id = Column(Integer, primary_key=True)
-    user = Column(Integer)
+    user = Column(Integer, ForeignKey('user.id'))
+    port = Column(Integer)
 
 Base.metadata.create_all(engine)

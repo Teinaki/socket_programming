@@ -1,11 +1,10 @@
 import struct
 import json
 import io
+from sqlalchemy.orm import Session
+from sqlalchemy import select
 
-
-request_login = {
-    "user": "Trying to login: User. \U0001f430",
-}
+import data_base
 
 class MessageServer:
     def __init__(self, data):
@@ -16,6 +15,7 @@ class MessageServer:
         self.needed_response = False
         self.created_response = False
         self.send_response = b''
+        self.session = Session(data_base.engine)
 
 
     def read(self):
@@ -77,10 +77,10 @@ class MessageServer:
             if action == "login":
                 query = self.request.get("params") #this is filler data, needs true database for users.
                 name = query["name"]
+                self.action_login(name)
                 print(name)
-                answer = request_login.get(name)
-                content = {"result": answer}
-            elif action == "send":
+                content = {"reply": f"{name} has logged in"}
+            elif action == "send_messages":
                 print("send") #Send in the future is a message from 1 user to another
                 content = {"result": "answer"}
             else:
@@ -104,5 +104,18 @@ class MessageServer:
         }
         header_bytes = json.dumps(header, ensure_ascii=False).encode(content_encoding)
         message_head = struct.pack(">H", len(header_bytes))
-        message = message_head + header_bytes + content_bytes
+        message = message_head + header_bytes + content_bytes #add pieces of our message all together ready to send
         return message
+
+    def action_login(self, username):
+        query = select(data_base.User).where(data_base.User.name == username)
+        user = self.session.execute(query).scalars().first() #if query empty create a user
+        if not user:
+            new_user = data_base.User(name=username) #create a user on the database
+            self.session.add(new_user)
+        login = data_base.Login(user=username) #create the instance of a log in
+        self.session.add(login)
+        self.session.commit()
+
+    def action_send_messages(self, username):
+        pass

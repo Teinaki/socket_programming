@@ -3,7 +3,7 @@ from sqlalchemy import Column, Integer, String, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy import create_engine
 
-engine = create_engine('sqlite://chatserver.db', future=True)
+engine = create_engine('sqlite:///socket_programming.db', future=True)
 Base = declarative_base()
 
 class User(Base):
@@ -21,8 +21,8 @@ class Message(Base):
     sent = Column(String)
     user = relationship("User", back_populates="message")
 
-class Logins(Base):
-    __tablename__ = 'logins'
+class Login(Base):
+    __tablename__ = 'login'
     id = Column(Integer, primary_key=True)
     user = Column(Integer)
 
